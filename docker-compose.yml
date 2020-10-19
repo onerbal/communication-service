@@ -1,0 +1,136 @@
+version: '3'
+services:
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOSTS=redis:redis
+    restart: always
+    ports:
+      - 8081:8081
+
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOSTS=redis:redis
+    restart: always
+    ports:
+      - 8001:8001
+
+  campaign-service:
+    build:
+      context: campaign-service
+      dockerfile: Dockerfile
+    image: campaign-service:latest
+    depends_on:
+      - redis
+      - vault
+    environment:
+      - SPRING_REDIS_HOST=redis
+    expose:
+      - 8080
+    ports:
+      - '8080:8080'
+
+  notification-service:
+    build:
+      context: notification-service
+      dockerfile: Dockerfile
+    image: notification-service:latest
+    depends_on:
+      - redis
+      - vault
+    environment:
+      - SPRING_REDIS_HOST=redis
+    expose:
+      - 8080
+    ports:
+      - 8080
+
+  email-service:
+    build:
+      context: email-service
+      dockerfile: Dockerfile
+    image: email-service:latest
+    depends_on:
+      - redis
+      - vault
+    environment:
+      - SPRING_REDIS_HOST=redis
+    expose:
+      - 8080
+    ports:
+      - 8080
+
+  user-service:
+    build:
+      context: user-service
+      dockerfile: Dockerfile
+    image: user-service:latest
+    environment:
+      - SPRING_REDIS_HOST=redis
+    expose:
+      - 8080
+    ports:
+      - '9080:8080'
+    links:
+      - db-users:db-users
+    depends_on:
+      - redis
+      - vault
+      - db-users
+
+  db-users:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    hostname: db-users
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=userdb
+    expose:
+      - 5432
+    volumes:
+      - user-data:/var/lib/postgresql/data/
+    restart: always
+
+  vault:
+    build:
+      context: vault
+      dockerfile: Dockerfile
+    image: vault:latest
+    container_name: vault
+    ports:
+      - '8200:8200'
+    restart: always
+
+    cap_add:
+      - IPC_LOCK
+
+  inbucket:
+    image: inbucket/inbucket:latest
+    container_name: inbucket
+    ports:
+      - '9000:9000'
+      - '2500:2500'
+      - '1100:1100'
+    environment:
+      INBUCKET_LOGLEVEL: 'error'
+      INBUCKET_WEB_PPROF: 'true'
+      INBUCKET_STORAGE_TYPE: 'memory'
+    expose:
+      - 9000
+      - 2500
+      - 1100
+
+volumes:
+  user-data:
