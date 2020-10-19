@@ -22,10 +22,6 @@ public class CampaignProducer {
                 .ofObject(event)
                 .withStreamKey(campaignStreamKey);
 
-        //redisTemplate.opsForStream().add(StreamRecords.mapBacked(objectMapper.convertValue(event, Map.class)).withStreamKey(campaignStreamKey));
-
-        //redisTemplate.opsForStream().add(campaignStreamKey, JsonUtils.convertObjectToMap(event));
-
         redisTemplate.opsForStream()
                 .add(campaignEvent)
                 .subscribe();

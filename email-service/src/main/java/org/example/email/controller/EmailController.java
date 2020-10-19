@@ -17,7 +17,7 @@ public class EmailController {
 
     @PostMapping("/send")
     public ResponseEntity<Boolean> sendEmail() {
-        emailService.sendEmail("deneme@deneme.com", "Selam", "Deneme");
+        emailService.sendEmail("test@test.com", "Test", "Test");
         return new ResponseEntity<>(true, HttpStatus.OK);
     }
 }
