@@ -40,6 +40,7 @@ Redis Streams has the concept of consumer groups, like the similar concept in Ap
 
 We can use Redis Streams as a message queue but it also has some significant differences from traditional message queues.
 
+In a notification system, low latency and huge throughput are critical factors. This is the most important reason for us to position Redis Streams at the heart of this system. 
 
 ![alt text](screenshots/streams-vs-mq.png "Streams vs MQ")
 
@@ -103,7 +104,11 @@ By using Vault, we can set different properties and secrets for "dev" and "prod"
 ![alt text](screenshots/vault2.png "Vault Secret")
 
 
+### TODO
 
+* Scheduler service to send notifications periodically.
+* Comprehensive retry mechanism for failed notifications.
+* Loosely-coupled eventing mechanism.
 
 License
 ----
